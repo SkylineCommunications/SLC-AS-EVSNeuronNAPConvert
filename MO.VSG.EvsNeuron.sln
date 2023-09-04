@@ -1,0 +1,73 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Internal", "Internal", "{3995DE10-92E0-4141-BEB5-05EACDE5D0F0}"
+	ProjectSection(SolutionItems) = preProject
+		Internal\.editorconfig = Internal\.editorconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{BE52C995-B753-43F4-8353-5FBD827003DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dlls", "Dlls", "{58240251-9307-4C54-B875-5B991DD592C4}"
+	ProjectSection(SolutionItems) = preProject
+		Dlls\ABOUT.md = Dlls\ABOUT.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CompanionFiles", "CompanionFiles", "{7B8FCE1A-8A5E-4048-B452-4FD1225D7F21}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Skyline DataMiner", "Skyline DataMiner", "{8FDDCE58-A871-4BD2-80FC-81B9196D661E}"
+	ProjectSection(SolutionItems) = preProject
+		CompanionFiles\Skyline DataMiner\AboutThisFolder.md = CompanionFiles\Skyline DataMiner\AboutThisFolder.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{738490AB-6D9A-4108-9694-D21FED386B16}"
+	ProjectSection(SolutionItems) = preProject
+		Documentation\ABOUT.md = Documentation\ABOUT.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F8938D60-51A0-4880-9CFC-19C66379BB5D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Code Analysis", "Code Analysis", "{29E6D2E3-BC63-44BF-998E-4151C03C3B2C}"
+	ProjectSection(SolutionItems) = preProject
+		Internal\Code Analysis\qaction-debug.ruleset = Internal\Code Analysis\qaction-debug.ruleset
+		Internal\Code Analysis\qaction-release.ruleset = Internal\Code Analysis\qaction-release.ruleset
+		Internal\Code Analysis\stylecop.json = Internal\Code Analysis\stylecop.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MO.VSG.EvsNeuron_Generate static flows and resources for processor", "MO.VSG.EvsNeuron_Generate static flows and resources for processor", "{FA293299-1F46-4C24-BD54-E7B581445752}"
+	ProjectSection(SolutionItems) = preProject
+		MO.VSG.EvsNeuron_Generate static flows and resources for processor.xml = MO.VSG.EvsNeuron_Generate static flows and resources for processor.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{26724AE8-94EE-48BB-8C06-18E95C186802}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MO.VSG.EvsNeuron_Generate static flows and resources for processor_1", "MO.VSG.EvsNeuron_Generate static flows and resources for processor_1\MO.VSG.EvsNeuron_Generate static flows and resources for processor_1.csproj", "{019F474E-A7AE-4BFD-A6BB-952EE047D7EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{019F474E-A7AE-4BFD-A6BB-952EE047D7EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{019F474E-A7AE-4BFD-A6BB-952EE047D7EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{019F474E-A7AE-4BFD-A6BB-952EE047D7EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{019F474E-A7AE-4BFD-A6BB-952EE047D7EA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8FDDCE58-A871-4BD2-80FC-81B9196D661E} = {7B8FCE1A-8A5E-4048-B452-4FD1225D7F21}
+		{29E6D2E3-BC63-44BF-998E-4151C03C3B2C} = {3995DE10-92E0-4141-BEB5-05EACDE5D0F0}
+		{FA293299-1F46-4C24-BD54-E7B581445752} = {BE52C995-B753-43F4-8353-5FBD827003DD}
+		{26724AE8-94EE-48BB-8C06-18E95C186802} = {FA293299-1F46-4C24-BD54-E7B581445752}
+		{019F474E-A7AE-4BFD-A6BB-952EE047D7EA} = {26724AE8-94EE-48BB-8C06-18E95C186802}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {09908B28-FDFD-4135-9326-80DE4F8FAF87}
+	EndGlobalSection
+EndGlobal

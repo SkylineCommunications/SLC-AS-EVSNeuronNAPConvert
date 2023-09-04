@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DMSScript options="272" xmlns="http://www.skyline.be/automation">
+	<Name>MO.VSG.EvsNeuron_Generate static flows and resources for processor</Name>
+	<Description></Description>
+	<Type>Automation</Type>
+	<Author>SKYLINE2\RRA</Author>
+	<CheckSets>FALSE</CheckSets>
+	<Folder>MediaOps</Folder>
+
+	<Protocols>
+	</Protocols>
+
+	<Memory>
+	</Memory>
+
+	<Parameters>
+	</Parameters>
+
+	<Script>
+		<Exe id="1" type="csharp">
+			<Value><![CDATA[[Project:MO.VSG.EvsNeuron_Generate static flows and resources for processor_1]]]></Value>
+			<!--<Param type="debug">true</Param>-->
+			<Message></Message>
+		</Exe>
+	</Script>
+</DMSScript>
