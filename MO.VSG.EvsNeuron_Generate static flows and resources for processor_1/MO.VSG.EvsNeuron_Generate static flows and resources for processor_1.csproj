@@ -24,6 +24,6 @@
 	<ItemGroup>
 	  <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.0.5" />
 	  <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Common" Version="1.1.0.5" />
-	  <PackageReference Include="Skyline.DataMiner.Utils.MediaOps.Common" Version="1.0.0-develop.34" />
+	  <PackageReference Include="Skyline.DataMiner.Utils.MediaOps.DomDefinitions" Version="1.0.1-Alpha2" />
 	</ItemGroup>
 </Project>

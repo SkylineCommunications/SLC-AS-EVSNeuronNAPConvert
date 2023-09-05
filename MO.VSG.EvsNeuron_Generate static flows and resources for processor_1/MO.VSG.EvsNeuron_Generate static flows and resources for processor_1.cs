@@ -64,8 +64,8 @@ namespace MO.VSG.EvsNeuron_Generate_static_flows_and_resources_for_processor_1
     using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.Messages.SLDataGateway;
     using Skyline.DataMiner.Net.Sections;
-    using Skyline.DataMiner.Utils.MediaOps.Common.DomDefinitions;
-    using Skyline.DataMiner.Utils.MediaOps.Common.DomDefinitions.Enums;
+    using Skyline.DataMiner.Utils.MediaOps.DomDefinitions;
+    using Skyline.DataMiner.Utils.MediaOps.DomDefinitions.Enums;
 
     /// <summary>
     /// Represents a DataMiner Automation script.
