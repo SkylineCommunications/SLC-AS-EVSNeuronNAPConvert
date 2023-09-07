@@ -37,14 +37,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Code Analysis", "Code Analy
 		Internal\Code Analysis\stylecop.json = Internal\Code Analysis\stylecop.json
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MO.VSG.EvsNeuron_Generate static flows and resources for processor", "MO.VSG.EvsNeuron_Generate static flows and resources for processor", "{FA293299-1F46-4C24-BD54-E7B581445752}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MO.VSG.EvsNeuron", "MO.VSG.EvsNeuron", "{FA293299-1F46-4C24-BD54-E7B581445752}"
 	ProjectSection(SolutionItems) = preProject
-		MO.VSG.EvsNeuron_Generate static flows and resources for processor.xml = MO.VSG.EvsNeuron_Generate static flows and resources for processor.xml
+		MO.VSG.EvsNeuron.xml = MO.VSG.EvsNeuron.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{26724AE8-94EE-48BB-8C06-18E95C186802}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MO.VSG.EvsNeuron_Generate static flows and resources for processor_1", "MO.VSG.EvsNeuron_Generate static flows and resources for processor_1\MO.VSG.EvsNeuron_Generate static flows and resources for processor_1.csproj", "{019F474E-A7AE-4BFD-A6BB-952EE047D7EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MO.VSG.EvsNeuron_1", "MO.VSG.EvsNeuron_1\MO.VSG.EvsNeuron_1.csproj", "{019F474E-A7AE-4BFD-A6BB-952EE047D7EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

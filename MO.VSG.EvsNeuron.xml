@@ -18,7 +18,7 @@
 
 	<Script>
 		<Exe id="1" type="csharp">
-			<Value><![CDATA[[Project:MO.VSG.EvsNeuron_Generate static flows and resources for processor_1]]]></Value>
+			<Value><![CDATA[[Project:MO.VSG.EvsNeuron_1]]]></Value>
 			<!--<Param type="debug">true</Param>-->
 			<Message></Message>
 		</Exe>

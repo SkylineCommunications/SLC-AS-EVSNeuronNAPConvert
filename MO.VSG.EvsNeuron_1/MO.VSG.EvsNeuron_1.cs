@@ -49,7 +49,7 @@ DATE		VERSION		AUTHOR			COMMENTS
 ****************************************************************************
 */
 
-namespace MO.VSG.EvsNeuron_Generate_static_flows_and_resources_for_processor_1
+namespace MO.VSG.EvsNeuron_1
 {
     using System;
     using System.Collections.Generic;
