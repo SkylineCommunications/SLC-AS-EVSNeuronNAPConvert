@@ -223,7 +223,7 @@ namespace MO.VSG.EvsNeuron_1
                 };
 
                 generatedVirtualSignalGroups.Add(videoPathData);
-                
+
                 vsGroupHelper.DomInstances.Create(virtualSignalGroupInstance);
             }
 
@@ -368,7 +368,6 @@ namespace MO.VSG.EvsNeuron_1
 
             foreach (var row in rows)
             {
-                // TODO: correct DCF interface
                 var flowInstance = GenerateSdiFlowFromSdiBiDirectionalTable(element, row);
                 flowHelper.DomInstances.Create(flowInstance.Value);
 
@@ -562,7 +561,6 @@ namespace MO.VSG.EvsNeuron_1
                 Flows.Sections.FlowGroup.LinkedSignalGroupIds,
                 virtualSignalGroup.ID.Id.ToString());
 
-            // todo: do not get each time, Maybe we can get that once at the beggining of the script. Check with Joey that.
             var levelInstance = levelsHelper.DomInstances
                 .Read(DomInstanceExposers.FieldValues.DomInstanceField(Levels.Sections.Level.LevelNumber)
                 .Equal((long)levelNumber))
