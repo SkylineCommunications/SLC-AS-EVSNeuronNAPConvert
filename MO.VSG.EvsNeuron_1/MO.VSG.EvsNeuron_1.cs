@@ -76,6 +76,7 @@ namespace MO.VSG.EvsNeuron_1
         private const string ProtocolName = "EVS Neuron NAP - CONVERT";
 
         private const int MacSettingsTableId = 1000;
+        private const int MacSettingsTableDcfParameterGroupId = 5;
 
         private const int SdiStaticIoTableId = 1700;
         private const int SdiStaticIoTableDcfParameterGroupId = 1;
@@ -157,9 +158,15 @@ namespace MO.VSG.EvsNeuron_1
         private List<VideoPathData> GenerateIpVirtualSignalGroupsAndFlows(IDmsElement element)
         {
             var macSettingsTable = element.GetTable(MacSettingsTableId);
-            var macSettingsTableRows = macSettingsTable.GetData().Values;
-            var mainStreamSourceIp = macSettingsTableRows.First().ToString();
-            var secondaryStreamSourceIp = macSettingsTableRows.Last().ToString();
+            var macSettingsTableRows = macSettingsTable.GetData().Values.ToArray();
+
+            var firstMacSettingsRow = macSettingsTableRows[0];
+            var mainStreamSourceIp = firstMacSettingsRow[2].ToString();
+            var firstMacDcfInterfaceId = GetDcfInterfaceId(element, MacSettingsTableDcfParameterGroupId, firstMacSettingsRow[0].ToString());
+
+            var secondMacSettingsRow = macSettingsTableRows[1];
+            var secondaryStreamSourceIp = secondMacSettingsRow[2].ToString();
+            var secondMacDcfInterfaceId = GetDcfInterfaceId(element, MacSettingsTableDcfParameterGroupId, secondMacSettingsRow[0].ToString());
 
             Dictionary<string, DomInstance> ipAudioPrimaryFlowInstances = new Dictionary<string, DomInstance>();
             Dictionary<string, DomInstance> ipAudioSecondaryFlowInstances = new Dictionary<string, DomInstance>();
@@ -169,12 +176,12 @@ namespace MO.VSG.EvsNeuron_1
             var ipVideoOutputStreamsTable = element.GetTable(IpVideoOutputStreamsTableId);
             foreach (var row in ipVideoOutputStreamsTable.GetData().Values)
             {
-                var flowInstance = GenerateIpFlowFromMainStreamIpVideoOutputStreamsTable(element, row, mainStreamSourceIp);
+                var flowInstance = GenerateIpFlowFromMainStreamIpVideoOutputStreamsTable(element, row, mainStreamSourceIp, firstMacDcfInterfaceId);
                 flowHelper.DomInstances.Create(flowInstance.Value);
 
                 ipVideoPrimaryFlowInstances.Add(flowInstance.Key, flowInstance.Value);
 
-                flowInstance = GenerateIpFlowFromSecondaryStreamIpVideoOutputStreamsTable(element, row, secondaryStreamSourceIp);
+                flowInstance = GenerateIpFlowFromSecondaryStreamIpVideoOutputStreamsTable(element, row, secondaryStreamSourceIp, secondMacDcfInterfaceId);
                 flowHelper.DomInstances.Create(flowInstance.Value);
 
                 ipVideoSecondaryFlowInstances.Add(flowInstance.Key, flowInstance.Value);
@@ -183,12 +190,12 @@ namespace MO.VSG.EvsNeuron_1
             var ipAudioOutputStreamsTable = element.GetTable(IpAudioOutputStreamsTableId);
             foreach (var row in ipAudioOutputStreamsTable.GetData().Values)
             {
-                var flowInstance = GenerateIpFlowFromMainStreamIpAudioOutputStreamsTable(element, row, mainStreamSourceIp);
+                var flowInstance = GenerateIpFlowFromMainStreamIpAudioOutputStreamsTable(element, row, mainStreamSourceIp, firstMacDcfInterfaceId);
                 flowHelper.DomInstances.Create(flowInstance.Value);
 
                 ipAudioPrimaryFlowInstances.Add(flowInstance.Key, flowInstance.Value);
 
-                flowInstance = GenerateIpFlowFromSecondaryStreamIpAudioOutputStreamsTable(element, row, secondaryStreamSourceIp);
+                flowInstance = GenerateIpFlowFromSecondaryStreamIpAudioOutputStreamsTable(element, row, secondaryStreamSourceIp, secondMacDcfInterfaceId);
                 flowHelper.DomInstances.Create(flowInstance.Value);
 
                 ipAudioSecondaryFlowInstances.Add(flowInstance.Key, flowInstance.Value);
@@ -650,7 +657,7 @@ namespace MO.VSG.EvsNeuron_1
             return new KeyValuePair<string, DomInstance>($"{channelId}", flowInstance);
         }
 
-        private KeyValuePair<string, DomInstance> GenerateIpFlowFromMainStreamIpVideoOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp)
+        private KeyValuePair<string, DomInstance> GenerateIpFlowFromMainStreamIpVideoOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp, string dcfInterface)
         {
             var index = rowData[7].ToString();
             var destinationPort = Convert.ToInt64(rowData[5].ToString());
@@ -669,8 +676,8 @@ namespace MO.VSG.EvsNeuron_1
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.AdministrativeState, (int)AdministrativeState.Up);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.TransportType, (int)TransportType.St2110_20);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Element, element.DmsElementId.Value);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, String.Empty);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, String.Empty);
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, rowData[0].ToString());
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, dcfInterface);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.PathOrder, 0L);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationPort, destinationPort);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationIp, destinationIp);
@@ -679,7 +686,7 @@ namespace MO.VSG.EvsNeuron_1
             return new KeyValuePair<string, DomInstance>($"{index}", flowInstance);
         }
 
-        private KeyValuePair<string, DomInstance> GenerateIpFlowFromSecondaryStreamIpVideoOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp)
+        private KeyValuePair<string, DomInstance> GenerateIpFlowFromSecondaryStreamIpVideoOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp, string dcfInterface)
         {
             var index = rowData[7].ToString();
             var secondaryDestinationPort = Convert.ToInt64(rowData[13].ToString());
@@ -698,8 +705,8 @@ namespace MO.VSG.EvsNeuron_1
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.AdministrativeState, (int)AdministrativeState.Up);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.TransportType, (int)TransportType.St2110_20);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Element, element.DmsElementId.Value);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, String.Empty);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, String.Empty);
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, rowData[0].ToString());
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, dcfInterface);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.PathOrder, 0L);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationPort, secondaryDestinationPort);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationIp, secondaryDestinationIp);
@@ -708,7 +715,7 @@ namespace MO.VSG.EvsNeuron_1
             return new KeyValuePair<string, DomInstance>($"{index}", flowInstance);
         }
 
-        private KeyValuePair<string, DomInstance> GenerateIpFlowFromMainStreamIpAudioOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp)
+        private KeyValuePair<string, DomInstance> GenerateIpFlowFromMainStreamIpAudioOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp, string dcfInterface)
         {
             var index = rowData[7].ToString();
             var destinationPort = Convert.ToInt64(rowData[5].ToString());
@@ -727,8 +734,8 @@ namespace MO.VSG.EvsNeuron_1
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.AdministrativeState, (int)AdministrativeState.Up);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.TransportType, (int)TransportType.St2110_30);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Element, element.DmsElementId.Value);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, String.Empty);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, String.Empty);
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, rowData[0].ToString());
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, dcfInterface);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.PathOrder, 0L);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationPort, destinationPort);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationIp, destinationIp);
@@ -737,7 +744,7 @@ namespace MO.VSG.EvsNeuron_1
             return new KeyValuePair<string, DomInstance>($"{index}", flowInstance);
         }
 
-        private KeyValuePair<string, DomInstance> GenerateIpFlowFromSecondaryStreamIpAudioOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp)
+        private KeyValuePair<string, DomInstance> GenerateIpFlowFromSecondaryStreamIpAudioOutputStreamsTable(IDmsElement element, object[] rowData, string sourceIp, string dcfInterface)
         {
             var index = rowData[7].ToString();
             var secondaryDestinationPort = Convert.ToInt64(rowData[13].ToString());
@@ -756,8 +763,8 @@ namespace MO.VSG.EvsNeuron_1
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.AdministrativeState, (int)AdministrativeState.Up);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.TransportType, (int)TransportType.St2110_30);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Element, element.DmsElementId.Value);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, String.Empty);
-            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, String.Empty);
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, rowData[0].ToString());
+            flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, dcfInterface);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.PathOrder, 0L);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationPort, secondaryDestinationPort);
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationIp, secondaryDestinationIp);
