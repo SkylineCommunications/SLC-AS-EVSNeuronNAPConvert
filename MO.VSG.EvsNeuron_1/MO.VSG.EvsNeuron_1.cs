@@ -605,28 +605,22 @@ namespace MO.VSG.EvsNeuron_1
             {
                 section = new Section(VirtualSignalGroup.Sections.LinkedFlows.Definition.ID);
 
-                var levelFieldValue = new FieldValue(
-                    VirtualSignalGroup.Sections.LinkedFlows.FlowLevel.ID,
-                    ValueWrapperFactory.Create(levelInstance.ID.Id));
+                var levelFieldValue = new FieldValue(VirtualSignalGroup.Sections.LinkedFlows.FlowLevel.ID, ValueWrapperFactory.Create(levelInstance.ID.Id));
                 section.AddOrReplaceFieldValue(levelFieldValue);
+
+                virtualSignalGroup.Sections.Add(section);
             }
 
             if (isBlueFlow)
             {
-                var fieldValue = new FieldValue(
-                    VirtualSignalGroup.Sections.LinkedFlows.BlueFlowId.ID,
-                    ValueWrapperFactory.Create(flow.ID.Id));
+                var fieldValue = new FieldValue(VirtualSignalGroup.Sections.LinkedFlows.BlueFlowId.ID, ValueWrapperFactory.Create(flow.ID.Id));
                 section.AddOrReplaceFieldValue(fieldValue);
             }
             else
             {
-                var fieldValue = new FieldValue(
-                    VirtualSignalGroup.Sections.LinkedFlows.RedFlowId.ID,
-                    ValueWrapperFactory.Create(flow.ID.Id));
+                var fieldValue = new FieldValue(VirtualSignalGroup.Sections.LinkedFlows.RedFlowId.ID, ValueWrapperFactory.Create(flow.ID.Id));
                 section.AddOrReplaceFieldValue(fieldValue);
             }
-
-            virtualSignalGroup.Sections.Add(section);
         }
 
         private KeyValuePair<string, DomInstance> GenerateSdiFlowFromSdiStaticIoTable(IDmsElement element, object[] rowData)
