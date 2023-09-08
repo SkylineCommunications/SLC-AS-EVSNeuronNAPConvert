@@ -63,6 +63,7 @@ namespace MO.VSG.EvsNeuron_1
     using Skyline.DataMiner.Net.Apps.Sections.Sections;
     using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.Messages.SLDataGateway;
+    using Skyline.DataMiner.Net.Profiles;
     using Skyline.DataMiner.Net.Sections;
     using Skyline.DataMiner.Utils.MediaOps.DomDefinitions;
     using Skyline.DataMiner.Utils.MediaOps.DomDefinitions.Enums;
@@ -138,14 +139,14 @@ namespace MO.VSG.EvsNeuron_1
 
             foreach (var element in dms.GetElements().Where(e => e.Protocol.Name == ProtocolName && e.Protocol.Version == "Production"))
             {
-                var inputVirtualSignalGroups = GenerateSdiVirtualSignalGroups(element);
-                var outputVirtualSignalGroups = GenerateIpVirtualSignalGroups(element);
+                var inputVirtualSignalGroups = GenerateSdiVirtualSignalGroupsAndFlows(element);
+                var outputVirtualSignalGroups = GenerateIpVirtualSignalGroupsAndFlows(element);
 
                 GenerateResources(element, inputVirtualSignalGroups, outputVirtualSignalGroups);
             }
         }
 
-        private List<VideoPathData> GenerateSdiVirtualSignalGroups(IDmsElement element)
+        private List<VideoPathData> GenerateSdiVirtualSignalGroupsAndFlows(IDmsElement element)
         {
             var sdiFlowInstances = GenerateSdiFlowInstances(element);
             numberOfGeneratedSdiFlows = sdiFlowInstances.Count;
@@ -153,7 +154,7 @@ namespace MO.VSG.EvsNeuron_1
             return GenerateSdiVirtualSignalGroups(element, sdiFlowInstances);
         }
 
-        private List<VideoPathData> GenerateIpVirtualSignalGroups(IDmsElement element)
+        private List<VideoPathData> GenerateIpVirtualSignalGroupsAndFlows(IDmsElement element)
         {
             var macSettingsTable = element.GetTable(MACSettingsTableId);
             var macSettingsTableRows = macSettingsTable.GetData().Values;
@@ -227,6 +228,90 @@ namespace MO.VSG.EvsNeuron_1
             }
 
             return generatedVirtualSignalGroups;
+        }
+
+        private void GenerateResources(IDmsElement element, List<VideoPathData> inputVirtualSignalGroups, List<VideoPathData> outputVirtualSignalGroups)
+        {
+            var resourceManagerHelper = new ResourceManagerHelper(engine.SendSLNetSingleResponseMessage);
+
+            var resourcePool = resourceManagerHelper.GetResourcePools(new ResourcePool { Name = "Processors" }).FirstOrDefault();
+            if (resourcePool == null)
+            {
+                resourcePool = new ResourcePool
+                {
+                    ID = Guid.NewGuid(),
+                    Name = "Processors",
+                };
+
+                resourceManagerHelper.AddOrUpdateResourcePools(resourcePool);
+            }
+
+            var profileManagerHelper = new ProfileHelper(engine.SendSLNetMessages);
+            var profileParameter = profileManagerHelper.ProfileParameters.Read(ExposerExtensions.Equal(ParameterExposers.Name, "Linked Source")).FirstOrDefault();
+            if (profileParameter == null)
+            {
+                profileParameter = new Skyline.DataMiner.Net.Profiles.Parameter
+                {
+                    ID = Guid.NewGuid(),
+                    Name = "Linked Source",
+                    Categories = ProfileParameterCategory.Capability,
+                    Type = Skyline.DataMiner.Net.Profiles.Parameter.ParameterType.Text,
+                };
+
+                profileManagerHelper.ProfileParameters.Create(profileParameter);
+            }
+
+            var resources = new List<Resource>();
+
+            var videoPathsTable = element.GetTable(VideoPathsTableId);
+            foreach (var rowData in videoPathsTable.GetData().Values)
+            {
+                var index = Convert.ToString(rowData[0]);
+
+                var resourceId = Guid.NewGuid();
+
+                var resource = new Resource
+                {
+                    ID = resourceId,
+                    GUID = resourceId,
+                    Name = $"{element.Name} {index}",
+                    ElementID = element.DmsElementId.ElementId,
+                    Mode = ResourceMode.Available,
+                    MaxConcurrency = 1000,
+                    PoolGUIDs = new List<Guid> { resourcePool.ID },
+                    Properties = new List<ResourceManagerProperty>
+                    {
+                        new ResourceManagerProperty
+                        {
+                            Name = "Path",
+                            Value = index,
+                        },
+                        new ResourceManagerProperty
+                        {
+                            Name = "input VSGs",
+                            Value = String.Join(";", inputVirtualSignalGroups.Select(vsg => vsg.GeneratedVirtualSignalGroup.ID.Id)),
+                        },
+                        new ResourceManagerProperty
+                        {
+                            Name = "output VSGs",
+                            Value = String.Join(";", outputVirtualSignalGroups.Select(vsg => vsg.GeneratedVirtualSignalGroup.ID.Id)),
+                        },
+                    },
+                    Capabilities = new List<Skyline.DataMiner.Net.SRM.Capabilities.ResourceCapability>
+                    {
+                        new Skyline.DataMiner.Net.SRM.Capabilities.ResourceCapability
+                        {
+                            CapabilityProfileID = profileParameter.ID,
+                            IsTimeDynamic = true,
+                            Value = null,
+                        },
+                    },
+                };
+
+                resources.Add(resource);
+            }
+
+            resourceManagerHelper.AddOrUpdateResources(resources.ToArray());
         }
 
         private Dictionary<string, DomInstance> GenerateSdiFlowInstances(IDmsElement element)
@@ -347,62 +432,6 @@ namespace MO.VSG.EvsNeuron_1
             }
 
             return generatedVirtualSignalGroups;
-        }
-
-        private void GenerateResources(IDmsElement element, List<VideoPathData> inputVirtualSignalGroups, List<VideoPathData> outputVirtualSignalGroups)
-        {
-            var resourceManagerHelper = new ResourceManagerHelper();
-
-            var resourcePool = new ResourcePool() { Name = "Processors" };
-            var processorsResourcePool = resourceManagerHelper
-                .GetResourcePools(resourcePool)
-                .SingleOrDefault(x => x.Name == "Processors");
-
-            if (processorsResourcePool is null)
-            {
-                resourcePool.ID = Guid.NewGuid();
-                resourceManagerHelper.AddOrUpdateResourcePools(resourcePool);
-            }
-
-            List<Resource> resources = new List<Resource>();
-
-            var videoPathsTable = element.GetTable(VideoPathsTableId);
-            foreach (var rowData in videoPathsTable.GetData().Values)
-            {
-                Guid resourceId = Guid.NewGuid();
-                var resource = new Resource()
-                {
-                    MaxConcurrency = 1000,
-                    Properties = new List<ResourceManagerProperty>()
-                    {
-                        new ResourceManagerProperty()
-                        {
-                            Name = "Path",
-                            Value = $"{element.Name} Index",
-                        },
-                        new ResourceManagerProperty()
-                        {
-                            Name = "input VSGs",
-                            Value = "A1",
-                        },
-                        new ResourceManagerProperty()
-                        {
-                            Name = "output VSGs",
-                            Value = "A1",
-                        },
-                    },
-
-                    PoolGUIDs = new List<Guid> { resourcePool.ID },
-                    Mode = ResourceMode.Available,
-                    ID = resourceId,
-                    GUID = resourceId,
-                };
-
-                // add capabilit....
-                resources.Add(resource);
-            }
-
-            //resourceManagerHelper.AddOrUpdateResources(resources.ToArray());
         }
 
         private DomInstance GenerateVirtualSignalGroupForSdiInput(IDmsElement element, object[] row)
@@ -584,7 +613,7 @@ namespace MO.VSG.EvsNeuron_1
             };
 
             string channelId = rowData[0].ToString();
-            engine.GenerateInformation($"Flow intance name: {element.Name} SDI {channelId}");
+
             flowInstance.ID = new DomInstanceId(Guid.NewGuid());
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{element.Name} SDI {channelId}");
             flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.FlowDirection, (int)FlowDirection.Rx);
