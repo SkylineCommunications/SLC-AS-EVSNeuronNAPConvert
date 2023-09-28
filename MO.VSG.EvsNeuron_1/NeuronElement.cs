@@ -1,31 +1,18 @@
-﻿using Skyline.DataMiner.Core.DataMinerSystem.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Skyline.DataMiner.Core.DataMinerSystem.Common;
 
 internal class NeuronElement
 {
-    private const int SdiBidirectionalIoTableDcfParameterGroupId = 2;
-
-    private const int SdiBidirectionalIoTableDirectionPid = 3102;
-
-    private const int SdiBidirectionalIoTableId = 3100;
-
-    private const int SdiBidirectionalIoTableInputDirectionValue = 131;
-
-    private const int SdiStaticIoTableDcfParameterGroupId = 1;
-
-    private const int SdiStaticIoTableId = 1700;
-
-    private const int SdiStaticIoTableInputStatusOkValue = 131;
-
-    private const int SdiStaticIoTableStatusPid = 1702;
-
-    private const int VideoPathsTableId = 2300;
-
-    private const int MacSettingsTableId = 1000;
-    private const int MacSettingsTableDcfParameterGroupId = 5;
-
     private const int DcfInterfaceTableId = 65049;
+    private const int MacSettingsTableId = 1000;
+    private const int SdiBidirectionalIoTableDirectionPid = 3102;
+    private const int SdiBidirectionalIoTableId = 3100;
+    private const int SdiBidirectionalIoTableInputDirectionValue = 131;
+    private const int SdiStaticIoTableId = 1700;
+    private const int SdiStaticIoTableInputStatusOkValue = 131;
+    private const int SdiStaticIoTableStatusPid = 1702;
+    private const int VideoPathsTableId = 2300;
 
     internal NeuronElement(IDmsElement dmsElement)
     {
@@ -34,49 +21,11 @@ internal class NeuronElement
         this.DcfInterfacesTableRows = GetDcfInterfacesTableRows(dmsElement);
     }
 
-    internal string GetDcfInterfaceId(int parameterGroupId, string key)
-    {
-        var interfaceDynamicLink = String.Join(";", parameterGroupId, key);
-        var dcfInterfaceRow = this.DcfInterfacesTableRows.Find(i => i.InterfaceDynamicLink == interfaceDynamicLink);
-        return dcfInterfaceRow?.Key;
-    }
+    public List<DcfInterfacesTableRow> DcfInterfacesTableRows { get; }
 
-    private static List<DcfInterfacesTableRow> GetDcfInterfacesTableRows(IDmsElement element)
-    {
-        var table = element.GetTable(DcfInterfaceTableId);
-        var valueRows = table.GetData().Values;
-        var toReturn = new List<DcfInterfacesTableRow>();
-        foreach (var row in valueRows)
-        {
-            toReturn.Add(new DcfInterfacesTableRow
-            {
-                Key = Convert.ToString(row[0]),
-                InterfaceDynamicLink = Convert.ToString(row[5]),
-            });
-        }
+    public IDmsTable DcfInterfaceTable { get; }
 
-        return toReturn;
-    }
-
-    //todo remake this after
-    internal static List<VideoPathTableRow> GetVideoPathTableRows(IDmsElement element)
-    {
-        var table = element.GetTable(VideoPathsTableId);
-        var valueRows = table.GetData().Values;
-
-        var toReturn = new List<VideoPathTableRow>();
-        foreach (var row in valueRows)
-        {
-            toReturn.Add(new VideoPathTableRow
-            {
-                Key = Convert.ToString(row[0]),
-                MainInput = Convert.ToInt32(row[3]),
-                BackupInput = Convert.ToInt32(row[4]),
-            });
-        }
-
-        return toReturn;
-    }
+    public IDmsTable VideoPathsTable { get; }
 
     //todo remake this after
     internal static List<MacSettingsTableRow> GetMacSettingsTableRows(IDmsElement element)
@@ -96,12 +45,6 @@ internal class NeuronElement
 
         return toReturn;
     }
-
-    public IDmsTable VideoPathsTable { get; }
-
-    public List<DcfInterfacesTableRow> DcfInterfacesTableRows { get; }
-
-    public IDmsTable DcfInterfaceTable { get; }
 
     internal static IEnumerable<object[]> GetSdiBidirectionalIoTable(IDmsElement element)
     {
@@ -131,6 +74,50 @@ internal class NeuronElement
         });
     }
 
+    //todo remake this after
+    internal static List<VideoPathTableRow> GetVideoPathTableRows(IDmsElement element)
+    {
+        var table = element.GetTable(VideoPathsTableId);
+        var valueRows = table.GetData().Values;
+
+        var toReturn = new List<VideoPathTableRow>();
+        foreach (var row in valueRows)
+        {
+            toReturn.Add(new VideoPathTableRow
+            {
+                Key = Convert.ToString(row[0]),
+                MainInput = Convert.ToInt32(row[3]),
+                BackupInput = Convert.ToInt32(row[4]),
+            });
+        }
+
+        return toReturn;
+    }
+
+    internal string GetDcfInterfaceId(int parameterGroupId, string key)
+    {
+        var interfaceDynamicLink = String.Join(";", parameterGroupId, key);
+        var dcfInterfaceRow = this.DcfInterfacesTableRows.Find(i => i.InterfaceDynamicLink == interfaceDynamicLink);
+        return dcfInterfaceRow?.Key;
+    }
+
+    private static List<DcfInterfacesTableRow> GetDcfInterfacesTableRows(IDmsElement element)
+    {
+        var table = element.GetTable(DcfInterfaceTableId);
+        var valueRows = table.GetData().Values;
+        var toReturn = new List<DcfInterfacesTableRow>();
+        foreach (var row in valueRows)
+        {
+            toReturn.Add(new DcfInterfacesTableRow
+            {
+                Key = Convert.ToString(row[0]),
+                InterfaceDynamicLink = Convert.ToString(row[5]),
+            });
+        }
+
+        return toReturn;
+    }
+
     internal class BaseTableRow
     {
         protected BaseTableRow()
@@ -139,11 +126,9 @@ internal class NeuronElement
         internal string Key { get; set; }
     }
 
-    internal class VideoPathTableRow : BaseTableRow
+    internal class DcfInterfacesTableRow : BaseTableRow
     {
-        internal int MainInput { get; set; }
-
-        internal int BackupInput { get; set; }
+        internal string InterfaceDynamicLink { get; set; }
     }
 
     internal class MacSettingsTableRow : BaseTableRow
@@ -151,8 +136,10 @@ internal class NeuronElement
         internal string IpAddress { get; set; }
     }
 
-    internal class DcfInterfacesTableRow : BaseTableRow
+    internal class VideoPathTableRow : BaseTableRow
     {
-        internal string InterfaceDynamicLink { get; set; }
+        internal int BackupInput { get; set; }
+
+        internal int MainInput { get; set; }
     }
 }
