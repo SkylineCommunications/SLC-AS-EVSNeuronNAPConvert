@@ -49,12 +49,9 @@ DATE		VERSION		AUTHOR			COMMENTS
 ****************************************************************************
 */
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Core.DataMinerSystem.Automation;
 using Skyline.DataMiner.Core.DataMinerSystem.Common;
@@ -74,20 +71,9 @@ using Skyline.DataMiner.Utils.MediaOps.DomDefinitions.Enums;
 public class Script
 {
     private const string ProtocolName = "EVS Neuron NAP - CONVERT";
-
-    private const int MacSettingsTableId = 1000;
     private const int MacSettingsTableDcfParameterGroupId = 5;
-
-    private const int SdiStaticIoTableId = 1700;
     private const int SdiStaticIoTableDcfParameterGroupId = 1;
-    private const int SdiStaticIoTableStatusPid = 1702;
-    private const int SdiStaticIoTableInputStatusOkValue = 131;
-
-    private const int SdiBidirectionalIoTableId = 3100;
     private const int SdiBidirectionalIoTableDcfParameterGroupId = 2;
-    private const int SdiBidirectionalIoTableDirectionPid = 3102;
-    private const int SdiBidirectionalIoTableInputDirectionValue = 131;
-
     private const int VideoPathsTableId = 2300;
 
     private const int IpVideoOutputStreamsTableId = 3200;
@@ -173,8 +159,6 @@ public class Script
 
         //todo CheckIfDuplicates();
 
-        engine.GenerateInformation($"CurrentResources:\n{string.Join("\n", this.CurrentResources.Select(x => x.Name))}");
-
         var allElements = dms.GetElements().Where(e => e.Protocol.Name == ProtocolName && e.Protocol.Version == "Production");
         CheckAndRemoveResources(allElements);
 
@@ -207,18 +191,13 @@ public class Script
     {
         var sdiFlowInstances = GenerateSdiFlowInstances(element);
         var numberOfGeneratedSdiFlows = sdiFlowInstances.Count;
-
-        //var tableVideoPaths = element.GetTable(VideoPathsTableId);
         var videoPathsTableRows = NeuronElement.GetVideoPathTableRows(element);
         foreach (var row in videoPathsTableRows)
         {
-            //var primaryKey = row[0].ToString();
             var primaryKey = row.Key;
-            //var virtualSignalGroupInstance = GenerateVirtualSignalGroupForSdiInput(element, row);
 
             var virtualSignalGroupInstance = GenerateVSGSdiInput(element, primaryKey);
             var isFlowAssigned = false;
-            //var mainInput = Convert.ToInt32(row[3].ToString());
             var mainInput = row.MainInput;
             if (mainInput > MinDiscreetValueForSdiFlows &&
                 mainInput < MaxDiscreetValueForSdiFlows &&
@@ -230,7 +209,6 @@ public class Script
                 isFlowAssigned = true;
             }
 
-            //var backupInput = Convert.ToInt32(row[4].ToString());
             var backupInput = row.BackupInput;
             if (backupInput > MinDiscreetValueForSdiFlows &&
                 backupInput < MaxDiscreetValueForSdiFlows &&
@@ -244,9 +222,7 @@ public class Script
 
             if (isFlowAssigned)
             {
-                //virtualSignalGroupInstance = vsGroupHelper.DomInstances.Create(virtualSignalGroupInstance);
                 CreateOrUpdateVSGroup(virtualSignalGroupInstance);
-
                 if (!videoPaths.TryGetValue(primaryKey, out var videoPath))
                 {
                     videoPath = new VideoPathData { Path = primaryKey };
@@ -260,20 +236,13 @@ public class Script
 
     private void GenerateIpVirtualSignalGroupsAndFlows(IDmsElement element)
     {
-        //var macSettingsTable = element.GetTable(MacSettingsTableId);
-        //var macSettingsTableRows = macSettingsTable.GetData().Values.ToArray();
         var macSettingsTableRows = NeuronElement.GetMacSettingsTableRows(element);
-
         var firstMacSettingsRow = macSettingsTableRows[0];
-        //var mainStreamSourceIp = firstMacSettingsRow[2].ToString();
         var mainStreamSourceIp = firstMacSettingsRow.IpAddress;
-        //var firstMacDcfInterfaceId = GetDcfInterfaceId(element, MacSettingsTableDcfParameterGroupId, firstMacSettingsRow[0].ToString());
         var firstMacDcfInterfaceId = GetDcfInterfaceId(element, MacSettingsTableDcfParameterGroupId, firstMacSettingsRow.Key);
 
         var secondMacSettingsRow = macSettingsTableRows[1];
-        //var secondaryStreamSourceIp = secondMacSettingsRow[2].ToString();
         var secondaryStreamSourceIp = firstMacSettingsRow.IpAddress;
-        //var secondMacDcfInterfaceId = GetDcfInterfaceId(element, MacSettingsTableDcfParameterGroupId, secondMacSettingsRow[0].ToString());
         var secondMacDcfInterfaceId = GetDcfInterfaceId(element, MacSettingsTableDcfParameterGroupId, secondMacSettingsRow.Key);
 
         Dictionary<string, DomInstance> ipVideoPrimaryFlowInstances = new Dictionary<string, DomInstance>();
@@ -284,7 +253,6 @@ public class Script
         {
             {
                 var mainFlowInstancePair = GenerateIpFlowFromMainStreamIpVideoOutputStreamsTable(element, row, mainStreamSourceIp, firstMacDcfInterfaceId);
-                //flowHelper.DomInstances.Create(mainFlowInstance.Value);
                 var mainFlowInstance = mainFlowInstancePair.Value;
                 CreateOrUpdateFlow(mainFlowInstance);
                 ipVideoPrimaryFlowInstances.Add(mainFlowInstancePair.Key, mainFlowInstance);
@@ -292,7 +260,6 @@ public class Script
 
             {
                 var secondaryFlowInstancePair = GenerateIpFlowFromSecondaryStreamIpVideoOutputStreamsTable(element, row, secondaryStreamSourceIp, secondMacDcfInterfaceId);
-                //flowHelper.DomInstances.Create(secondaryFlowInstance.Value);
                 var secondaryFlowInstance = secondaryFlowInstancePair.Value;
                 CreateOrUpdateFlow(secondaryFlowInstance);
                 ipVideoSecondaryFlowInstances.Add(secondaryFlowInstancePair.Key, secondaryFlowInstance);
@@ -306,7 +273,6 @@ public class Script
         {
             {
                 var mainFlowInstancePair = GenerateIpFlowFromMainStreamIpAudioOutputStreamsTable(element, row, mainStreamSourceIp, firstMacDcfInterfaceId);
-                //flowHelper.DomInstances.Create(mainFlowInstancePair.Value);
                 var mainFlowInstance = mainFlowInstancePair.Value;
                 CreateOrUpdateFlow(mainFlowInstance);
                 ipAudioPrimaryFlowInstances.Add(mainFlowInstancePair.Key, mainFlowInstance);
@@ -314,7 +280,6 @@ public class Script
 
             {
                 var secondaryFlowInstancePair = GenerateIpFlowFromSecondaryStreamIpAudioOutputStreamsTable(element, row, secondaryStreamSourceIp, secondMacDcfInterfaceId);
-                //flowHelper.DomInstances.Create(secondaryFlowInstancePair.Value);
                 var secondaryFlowInstance = secondaryFlowInstancePair.Value;
                 CreateOrUpdateFlow(secondaryFlowInstance);
                 ipAudioSecondaryFlowInstances.Add(secondaryFlowInstancePair.Key, secondaryFlowInstance);
@@ -340,10 +305,7 @@ public class Script
             flowInstance = ipAudioSecondaryFlowInstances[primaryKey];
             AssignFlowToVirtualSignalGroup(virtualSignalGroupInstance, flowInstance, Level.Audio1, FlowType.Red);
 
-            //virtualSignalGroupInstance = vsGroupHelper.DomInstances.Create(virtualSignalGroupInstance);
             CreateOrUpdateVSGroup(virtualSignalGroupInstance);
-
-
             if (!videoPaths.TryGetValue(primaryKey, out var videoPath))
             {
                 videoPath = new VideoPathData { Path = primaryKey };
@@ -397,12 +359,8 @@ public class Script
             var inputVSGroup = videoPath.GeneratedInputVirtualSignalGroup?.ID?.Id.ToString();
             var outputVSGroup = videoPath.GeneratedOutputVirtualSignalGroup?.ID?.Id.ToString();
 
-            //var resourceId = Guid.NewGuid();
-
             var resource = new Resource
             {
-                //ID = resourceId,
-                //GUID = resourceId,
                 Name = $"{element.Name} {index}",
                 DmaID = element.DmsElementId.AgentId,
                 ElementID = element.DmsElementId.ElementId,
@@ -437,26 +395,22 @@ public class Script
                             Value = new CapabilityParameterValue(),
                         },
                     },
-
             };
 
             var currentResource = CurrentResources.Find(r => r.Name == resource.Name);
             if (currentResource != null)
             {
-                engine.GenerateInformation($"Resource found: {resource.Name}");
                 resource.ID = currentResource.ID;
                 resource.GUID = currentResource.GUID;
             }
             else
             {
-                engine.GenerateInformation($"Resource not found: {resource.Name}");
                 var resourceId = Guid.NewGuid();
                 resource.ID = resourceId;
                 resource.GUID = resourceId;
             }
 
             resources.Add(resource);
-            break;
         }
 
         resourceManagerHelper.AddOrUpdateResources(resources.ToArray());
@@ -476,41 +430,13 @@ public class Script
     private Dictionary<string, DomInstance> GenerateSdiFlowInstancesFromSdiStaticIoTable(IDmsElement element)
     {
         var sdiFlowInstances = new Dictionary<string, DomInstance>();
-
-        //var table = element.GetTable(SdiStaticIoTableId);
-        //var rows = table.QueryData(new[]
-        //{
-        //    new ColumnFilter
-        //    {
-        //        ComparisonOperator = ComparisonOperator.Equal,
-        //        Pid = SdiStaticIoTableStatusPid,
-        //        Value = Convert.ToString(SdiStaticIoTableInputStatusOkValue),
-        //    },
-        //});
-
         var rows = NeuronElement.GetSdiStaticIoTable(element);
         foreach (var row in rows)
         {
-            //var flowInstance = GenerateSdiFlowFromSdiStaticIoTable(element, row);
-
             var key = Convert.ToString(row[0]);
             var newFlow = GenerateSdiFlow(element, key, SdiStaticIoTableDcfParameterGroupId);
             DomInstance newFlowInstance = newFlow.Value;
-
-            //var currentFlowInstance = this.CurrentFlows.SingleOrDefault(flow => flow.Name == $"{element.Name} SDI {key}");
-            //if (currentFlowInstance != null)
-            //{
-            //    // Keep the previous ID and update
-            //    newFlowInstance.ID = currentFlowInstance.ID;
-            //    flowHelper.DomInstances.Update(newFlowInstance);
-            //}
-            //else
-            //{
-            //    flowHelper.DomInstances.Create(newFlowInstance);
-            //}
-
             CreateOrUpdateFlow(newFlowInstance);
-
             sdiFlowInstances.Add(newFlow.Key, newFlowInstance);
         }
 
@@ -520,38 +446,12 @@ public class Script
     private Dictionary<string, DomInstance> GenerateSdiFlowInstancesFromSdiBiDirectionalTable(IDmsElement element)
     {
         var sdiFlowInstances = new Dictionary<string, DomInstance>();
-
-        //var table = element.GetTable(SdiBidirectionalIoTableId);
-        //var rows = table.QueryData(new[]
-        //{
-        //        new ColumnFilter
-        //        {
-        //            ComparisonOperator = ComparisonOperator.Equal,
-        //            Pid = SdiBidirectionalIoTableDirectionPid,
-        //            Value = Convert.ToString(SdiBidirectionalIoTableInputDirectionValue),
-        //        },
-        //});
-
         var rows = NeuronElement.GetSdiBidirectionalIoTable(element);
         foreach (var row in rows)
         {
-            //var flowInstance = GenerateSdiFlowFromSdiBiDirectionalTable(element, row);
-
             var key = Convert.ToString(row[0]);
             var newFlow = GenerateSdiFlow(element, key, SdiBidirectionalIoTableDcfParameterGroupId);
             DomInstance newFlowInstance = newFlow.Value;
-
-            //var currentFlowInstance = this.CurrentFlows.SingleOrDefault(flow => flow.Name == $"{element.Name} SDI {key}");
-            //if (currentFlowInstance != null)
-            //{
-            //    // Keep the previous ID and update
-            //    newFlowInstance.ID = currentFlowInstance.ID;
-            //    flowHelper.DomInstances.Update(newFlowInstance);
-            //}
-            //else
-            //{
-            //    flowHelper.DomInstances.Create(newFlowInstance);
-            //}
 
             CreateOrUpdateFlow(newFlowInstance);
 
@@ -563,36 +463,12 @@ public class Script
 
     private void CreateOrUpdateFlow(DomInstance newInstance)
     {
-        //var currentFlowInstance = this.CurrentFlows.SingleOrDefault(flow => flow.Name == domInstance.Name);
-        //if (currentFlowInstance != null)
-        //{
-        //    // Keep the previous ID and update
-        //    domInstance.ID = currentFlowInstance.ID;
-        //    flowHelper.DomInstances.Update(domInstance);
-        //}
-        //else
-        //{
-        //    flowHelper.DomInstances.Create(domInstance);
-        //}
-
         var name = newInstance.GetFieldValue<string>(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name).Value;
         CreateOrUpdateDomInstance(this.flowHelper, this.CurrentFlows, newInstance, name);
     }
 
     private void CreateOrUpdateVSGroup(DomInstance newInstance)
     {
-        //var currentInstance = this.CurrentVSGroups.SingleOrDefault(instances => instances.Name == newInstance.Name);
-        //if (currentInstance != null)
-        //{
-        //    // Keep the previous ID and update
-        //    newInstance.ID = currentInstance.ID;
-        //    vsGroupHelper.DomInstances.Update(newInstance);
-        //}
-        //else
-        //{
-        //    vsGroupHelper.DomInstances.Create(newInstance);
-        //}
-
         var name = newInstance.GetFieldValue<string>(VirtualSignalGroup.Sections.Info.Definition, VirtualSignalGroup.Sections.Info.Name).Value;
         CreateOrUpdateDomInstance(this.vsGroupHelper, this.CurrentVSGroups, newInstance, name);
     }
@@ -612,64 +488,6 @@ public class Script
             newInstance.ID = new DomInstanceId(Guid.NewGuid());
             helper.DomInstances.Create(newInstance);
         }
-    }
-
-    [Obsolete]
-    private DomInstance GenerateVirtualSignalGroupForSdiInput(IDmsElement element, object[] row)
-    {
-        var index = row[0].ToString();
-
-        var virtualSignalGroupInstance = new DomInstance
-        {
-            DomDefinitionId = VirtualSignalGroup.DomDefinition.ID,
-        };
-
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.Info.Definition,
-            VirtualSignalGroup.Sections.Info.Name,
-            $"{element.Name} {index} Input");
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.Info.Definition,
-            VirtualSignalGroup.Sections.Info.Role,
-            (int)Role.Destination);
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.Info.Definition,
-            VirtualSignalGroup.Sections.Info.OperationalState,
-            (int)OperationalState.Up);
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.Info.Definition,
-            VirtualSignalGroup.Sections.Info.AdministrativeState,
-            (int)AdministrativeState.Up);
-
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.Info.Definition,
-            VirtualSignalGroup.Sections.Info.Type,
-            Guid.Empty);
-
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.SystemLabels.Definition,
-            VirtualSignalGroup.Sections.SystemLabels.ButtonLabel,
-            $"{element.Name} {index}");
-
-        virtualSignalGroupInstance.AddOrUpdateListFieldValue(
-            VirtualSignalGroup.Sections.AreaInfo.Definition,
-            VirtualSignalGroup.Sections.AreaInfo.Areas,
-            new List<Guid>());
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.AreaInfo.Definition,
-            VirtualSignalGroup.Sections.AreaInfo.AreaIds,
-            String.Empty);
-
-        virtualSignalGroupInstance.AddOrUpdateListFieldValue(
-            VirtualSignalGroup.Sections.DomainInfo.Definition,
-            VirtualSignalGroup.Sections.DomainInfo.Domains,
-            new List<Guid>());
-        virtualSignalGroupInstance.AddOrUpdateFieldValue(
-            VirtualSignalGroup.Sections.DomainInfo.Definition,
-            VirtualSignalGroup.Sections.DomainInfo.DomainIds,
-            String.Empty);
-
-        return virtualSignalGroupInstance;
     }
 
     private DomInstance GenerateVSGSdiInput(IDmsElement element, string key)
@@ -788,53 +606,6 @@ public class Script
         return virtualSignalGroupInstance;
     }
 
-    [Obsolete]
-    private void AssignFlowToVirtualSignalGroup(DomInstance virtualSignalGroup, DomInstance flow, Level levelNumber, bool isBlueFlow)
-    {
-        flow.AddOrUpdateListFieldValue(
-            Flows.Sections.FlowGroup.Definition,
-            Flows.Sections.FlowGroup.LinkedSignalGroup,
-            new List<Guid> { virtualSignalGroup.ID.Id });
-        flow.AddOrUpdateFieldValue(
-            Flows.Sections.FlowGroup.Definition,
-            Flows.Sections.FlowGroup.LinkedSignalGroupIds,
-            virtualSignalGroup.ID.Id.ToString());
-
-        var levelInstance = levelsHelper.DomInstances
-            .Read(DomInstanceExposers.FieldValues.DomInstanceField(Levels.Sections.Level.LevelNumber)
-            .Equal((long)levelNumber))
-            .FirstOrDefault();
-        if (levelInstance == null)
-        {
-            return;
-        }
-
-        var section = virtualSignalGroup.Sections
-            .Find(s => s.FieldValues
-                .Any(f => f.FieldDescriptorID.Equals(VirtualSignalGroup.Sections.LinkedFlows.FlowLevel.ID) &&
-                    f.Value.Equals(ValueWrapperFactory.Create(levelInstance.ID.Id))));
-        if (section == null)
-        {
-            section = new Section(VirtualSignalGroup.Sections.LinkedFlows.Definition.ID);
-
-            var levelFieldValue = new FieldValue(VirtualSignalGroup.Sections.LinkedFlows.FlowLevel.ID, ValueWrapperFactory.Create(levelInstance.ID.Id));
-            section.AddOrReplaceFieldValue(levelFieldValue);
-
-            virtualSignalGroup.Sections.Add(section);
-        }
-
-        if (isBlueFlow)
-        {
-            var fieldValue = new FieldValue(VirtualSignalGroup.Sections.LinkedFlows.BlueFlowId.ID, ValueWrapperFactory.Create(flow.ID.Id));
-            section.AddOrReplaceFieldValue(fieldValue);
-        }
-        else
-        {
-            var fieldValue = new FieldValue(VirtualSignalGroup.Sections.LinkedFlows.RedFlowId.ID, ValueWrapperFactory.Create(flow.ID.Id));
-            section.AddOrReplaceFieldValue(fieldValue);
-        }
-    }
-
     private void AssignFlowToVirtualSignalGroup(DomInstance virtualSignalGroup, DomInstance flow, Level levelNumber, FlowType flowType)
     {
         flow.AddOrUpdateListFieldValue(
@@ -877,56 +648,6 @@ public class Script
             var fieldValue = new FieldValue(VirtualSignalGroup.Sections.LinkedFlows.RedFlowId.ID, ValueWrapperFactory.Create(flow.ID.Id));
             section.AddOrReplaceFieldValue(fieldValue);
         }
-    }
-
-    [Obsolete]
-    private KeyValuePair<string, DomInstance> GenerateSdiFlowFromSdiStaticIoTable(IDmsElement element, object[] rowData)
-    {
-        var flowInstance = new DomInstance
-        {
-            DomDefinitionId = Flows.DomDefinition.ID,
-        };
-
-        var primaryKey = rowData[0].ToString();
-        var dcfInterface = GetDcfInterfaceId(element, SdiStaticIoTableDcfParameterGroupId, primaryKey);
-
-        //flowInstance.ID = new DomInstanceId(Guid.NewGuid());
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{element.Name} SDI {primaryKey}");
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.FlowDirection, (int)FlowDirection.Rx);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.OperationalState, (int)OperationalState.Up);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.AdministrativeState, (int)AdministrativeState.Up);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.TransportType, (int)TransportType.Sdi);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Element, element.DmsElementId.Value);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, String.Empty);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, dcfInterface ?? String.Empty);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.PathOrder, 0L);
-
-        return new KeyValuePair<string, DomInstance>($"{primaryKey}", flowInstance);
-    }
-
-    [Obsolete]
-    private KeyValuePair<string, DomInstance> GenerateSdiFlowFromSdiBiDirectionalTable(IDmsElement element, object[] rowData)
-    {
-        var flowInstance = new DomInstance
-        {
-            DomDefinitionId = Flows.DomDefinition.ID,
-        };
-
-        var primaryKey = rowData[0].ToString();
-        var dcfInterface = GetDcfInterfaceId(element, SdiBidirectionalIoTableDcfParameterGroupId, primaryKey);
-
-        flowInstance.ID = new DomInstanceId(Guid.NewGuid());
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{element.Name} SDI {primaryKey}");
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.FlowDirection, (int)FlowDirection.Rx);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.OperationalState, (int)OperationalState.Up);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.AdministrativeState, (int)AdministrativeState.Up);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.TransportType, (int)TransportType.Sdi);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Element, element.DmsElementId.Value);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, String.Empty);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.Interface, dcfInterface ?? String.Empty);
-        flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.PathOrder, 0L);
-
-        return new KeyValuePair<string, DomInstance>($"{primaryKey}", flowInstance);
     }
 
     private KeyValuePair<string, DomInstance> GenerateSdiFlow(IDmsElement element, string primaryKey, int dcfParameterGroupId)
@@ -988,6 +709,7 @@ public class Script
         {
             DomDefinitionId = Flows.DomDefinition.ID,
         };
+
         //flowInstance.ID = new DomInstanceId(Guid.NewGuid());
         flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{element.Name} Secondary Video Stream {pathSelection}");
         flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.FlowDirection, (int)FlowDirection.Tx);
@@ -1014,6 +736,7 @@ public class Script
         {
             DomDefinitionId = Flows.DomDefinition.ID,
         };
+
         //flowInstance.ID = new DomInstanceId(Guid.NewGuid());
         flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{element.Name} Main Audio Stream {primaryKey}");
         flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.FlowDirection, (int)FlowDirection.Tx);
@@ -1040,6 +763,7 @@ public class Script
         {
             DomDefinitionId = Flows.DomDefinition.ID,
         };
+
         //flowInstance.ID = new DomInstanceId(Guid.NewGuid());
         flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{element.Name} Secondary Audio Stream {primaryKey}");
         flowInstance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.FlowDirection, (int)FlowDirection.Tx);

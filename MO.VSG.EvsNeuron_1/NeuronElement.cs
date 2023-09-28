@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Skyline.DataMiner.Core.DataMinerSystem.Common;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using Skyline.DataMiner.Core.DataMinerSystem.Common;
 
 internal class NeuronElement
 {
@@ -32,11 +31,10 @@ internal class NeuronElement
     {
         // Tables that are called more than once
         this.VideoPathsTable = dmsElement.GetTable(VideoPathsTableId);
-        //this.DcfInterfaceTable = dmsElement.GetTable(DcfInterfaceTableId);
         this.DcfInterfacesTableRows = GetDcfInterfacesTableRows(dmsElement);
     }
 
-    internal string GetDcfInterfaceId(int parameterGroupId,string key)
+    internal string GetDcfInterfaceId(int parameterGroupId, string key)
     {
         var interfaceDynamicLink = String.Join(";", parameterGroupId, key);
         var dcfInterfaceRow = this.DcfInterfacesTableRows.Find(i => i.InterfaceDynamicLink == interfaceDynamicLink);
@@ -135,7 +133,8 @@ internal class NeuronElement
 
     internal class BaseTableRow
     {
-        protected BaseTableRow() { }
+        protected BaseTableRow()
+        { }
 
         internal string Key { get; set; }
     }
@@ -149,7 +148,6 @@ internal class NeuronElement
 
     internal class MacSettingsTableRow : BaseTableRow
     {
-
         internal string IpAddress { get; set; }
     }
 
