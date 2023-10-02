@@ -265,7 +265,7 @@ public class Script
         var dcfInterfaceId = neuron.GetDcfInterfaceId(MacSettingsTableDcfParameterGroupId, macSettingsTableRow.Key);
 
         var instance = GetFlowInstance(TransportType.St2110_30, dmsElement.DmsElementId, dcfInterfaceId);
-        instance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{dmsElement.Name} Main Audio Stream {ipAudioTableRow.Key}");
+        instance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{dmsElement.Name} Main Audio Stream {ipAudioTableRow.Path}");
         instance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, ipAudioTableRow.Key);
         instance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationPort, ipAudioTableRow.PrimaryDestinationPort);
         instance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationIp, ipAudioTableRow.PrimaryDestinationIp);
@@ -280,7 +280,7 @@ public class Script
         var dcfInterfaceId = neuron.GetDcfInterfaceId(MacSettingsTableDcfParameterGroupId, macSettingsTableRow.Key);
 
         var instance = GetFlowInstance(TransportType.St2110_30, dmsElement.DmsElementId, dcfInterfaceId);
-        instance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{dmsElement.Name} Secondary Audio Stream {ipAudioTableRow.Key}");
+        instance.AddOrUpdateFieldValue(Flows.Sections.FlowInfo.Definition, Flows.Sections.FlowInfo.Name, $"{dmsElement.Name} Secondary Audio Stream {ipAudioTableRow.Path}");
         instance.AddOrUpdateFieldValue(Flows.Sections.FlowPath.Definition, Flows.Sections.FlowPath.SubInterface, ipAudioTableRow.Key);
         instance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationPort, ipAudioTableRow.SecondaryDestinationPort);
         instance.AddOrUpdateFieldValue(Flows.Sections.FlowTransport.Definition, Flows.Sections.FlowTransport.DestinationIp, ipAudioTableRow.SecondaryDestinationIp);
