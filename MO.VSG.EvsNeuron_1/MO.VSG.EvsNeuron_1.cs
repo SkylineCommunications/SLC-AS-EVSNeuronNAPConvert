@@ -166,7 +166,11 @@ public class Script
         }
     }
 
-    private static void CreateOrUpdateDomInstance(DomHelper helper, IEnumerable<DomInstance> currentInstances, DomInstance newInstance, string instanceName)
+    private static void CreateOrUpdateDomInstance(
+        DomHelper helper,
+        IEnumerable<DomInstance> currentInstances,
+        DomInstance newInstance,
+        string instanceName)
     {
         var currentInstance = currentInstances.FirstOrDefault(i => i.Name == instanceName);
         if (currentInstance != null)
@@ -199,7 +203,7 @@ public class Script
         instance.AddOrUpdateFieldValue(
             VirtualSignalGroup.Sections.Info.Definition,
             VirtualSignalGroup.Sections.Info.Role,
-            (int)Role.Destination);
+            (int)role);
         instance.AddOrUpdateFieldValue(
             VirtualSignalGroup.Sections.Info.Definition,
             VirtualSignalGroup.Sections.Info.OperationalState,
@@ -208,7 +212,6 @@ public class Script
             VirtualSignalGroup.Sections.Info.Definition,
             VirtualSignalGroup.Sections.Info.AdministrativeState,
             (int)AdministrativeState.Up);
-
         instance.AddOrUpdateFieldValue(
             VirtualSignalGroup.Sections.Info.Definition,
             VirtualSignalGroup.Sections.Info.Type,
@@ -259,7 +262,10 @@ public class Script
         return instance;
     }
 
-    private static DomInstance GetIpAudioPrimaryFlowInstance(NeuronElement neuron, IpOutputStreamTableRow ipAudioTableRow, MacSettingsTableRow macSettingsTableRow)
+    private static DomInstance GetIpAudioPrimaryFlowInstance(
+        NeuronElement neuron,
+        IpOutputStreamTableRow ipAudioTableRow,
+        MacSettingsTableRow macSettingsTableRow)
     {
         IDmsElement dmsElement = neuron.DmsElement;
         var dcfInterfaceId = neuron.GetDcfInterfaceId(MacSettingsTableDcfParameterGroupId, macSettingsTableRow.Key);
@@ -274,7 +280,10 @@ public class Script
         return instance;
     }
 
-    private static DomInstance GetIpAudioSecondaryFlowInstance(NeuronElement neuron, IpOutputStreamTableRow ipAudioTableRow, MacSettingsTableRow macSettingsTableRow)
+    private static DomInstance GetIpAudioSecondaryFlowInstance(
+        NeuronElement neuron,
+        IpOutputStreamTableRow ipAudioTableRow,
+        MacSettingsTableRow macSettingsTableRow)
     {
         IDmsElement dmsElement = neuron.DmsElement;
         var dcfInterfaceId = neuron.GetDcfInterfaceId(MacSettingsTableDcfParameterGroupId, macSettingsTableRow.Key);
@@ -289,7 +298,10 @@ public class Script
         return instance;
     }
 
-    private static DomInstance GetIpVideoPrimaryFlowInstance(NeuronElement neuron, IpOutputStreamTableRow ipVideoTableRow, MacSettingsTableRow macSettingsTableRow)
+    private static DomInstance GetIpVideoPrimaryFlowInstance(
+        NeuronElement neuron,
+        IpOutputStreamTableRow ipVideoTableRow,
+        MacSettingsTableRow macSettingsTableRow)
     {
         IDmsElement dmsElement = neuron.DmsElement;
         var dcfInterfaceId = neuron.GetDcfInterfaceId(MacSettingsTableDcfParameterGroupId, macSettingsTableRow.Key);
@@ -304,7 +316,10 @@ public class Script
         return instance;
     }
 
-    private static DomInstance GetIpVideoSecondaryFlowInstance(NeuronElement neuron, IpOutputStreamTableRow ipVideoTableRow, MacSettingsTableRow macSettingsTableRow)
+    private static DomInstance GetIpVideoSecondaryFlowInstance(
+        NeuronElement neuron,
+        IpOutputStreamTableRow ipVideoTableRow,
+        MacSettingsTableRow macSettingsTableRow)
     {
         IDmsElement dmsElement = neuron.DmsElement;
         var dcfInterfaceId = neuron.GetDcfInterfaceId(MacSettingsTableDcfParameterGroupId, macSettingsTableRow.Key);
@@ -474,7 +489,11 @@ public class Script
         return flows;
     }
 
-    private DomInstance GetIpVSGroup(IDmsElement element, Dictionary<string, IpFlow> ipVideoFlows, Dictionary<string, IpFlow> ipAudioFlows, string videoPathKey)
+    private DomInstance GetIpVSGroup(
+        IDmsElement element,
+        Dictionary<string, IpFlow> ipVideoFlows,
+        Dictionary<string, IpFlow> ipAudioFlows,
+        string videoPathKey)
     {
         string key = videoPathKey;
         var vsgroup = GenerateVSGroup(element.Name, key, Role.Source);
